@@ -24,42 +24,27 @@
 # Copyright 2012, Thomas Van Doren, unless otherwise noted
 #
 class etckeeper {
-  # HIGHLEVEL_PACKAGE_MANAGER config setting.
-  $etckeeper_high_pkg_mgr = $operatingsystem ? {
-    /(?i-mx:ubuntu|debian)/        => 'apt',
-    /(?i-mx:centos|fedora|redhat)/ => 'yum',
-  }
-
-  # LOWLEVEL_PACKAGE_MANAGER config setting.
-  $etckeeper_low_pkg_mgr = $operatingsystem ? {
-    /(?i-mx:ubuntu|debian)/        => 'dpkg',
-    /(?i-mx:centos|fedora|redhat)/ => 'rpm',
-  }
 
   Package {
     ensure => present,
   }
-  package { 'git': }
-  package { 'etckeeper':
-    require => [ Package['git'],
-                 File['etckeeper.conf'],
-                 ],
+
+  package { ['git', 'etckeeper']:
+    ensure => present,
   }
-  file { '/etc/etckeeper':
-    ensure => directory,
-  }
-  file { 'etckeeper.conf':
-    ensure  => present,
-    path    => '/etc/etckeeper/etckeeper.conf',
-    owner   => root,
-    group   => root,
-    mode    => '0644',
-    content => template('etckeeper/etckeeper.conf.erb'),
-  }
-  exec { 'etckeeper-init':
-    command => '/usr/bin/etckeeper init',
-    cwd     => '/etc',
-    creates => '/etc/.git',
-    require => [ Package['git'], Package['etckeeper'], ],
-  }
+
+  include etckeeper::conf
+
+  #package { 'etckeeper':
+  #  require => [ Package['git'],
+  #               File['etckeeper.conf'],
+  #               ],
+  #}
+
+  #exec { 'etckeeper-init':
+  #  command => '/usr/bin/etckeeper init',
+  #  cwd     => '/etc',
+  #  creates => '/etc/.git',
+  #  require => [ Package['git'], Package['etckeeper'], ],
+  #}
 }
